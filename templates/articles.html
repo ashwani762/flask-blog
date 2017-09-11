@@ -1,0 +1,11 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+    <h1 class="display-3" style="margin-bottom: 3%;">Articles</h1>
+    <ul class="list-group"></ul>
+        {% for article in articles %}
+            <li class="list-group-item"><a href="article/{{ article.id }}">{{ article.title }}</a></li>
+        {% endfor %}
+    </ul>
+    <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p>
+{% endblock %}
