@@ -214,6 +214,74 @@ def add_article():
     return render_template('add_article.html', form=form)
 
 
+
+@app.route('/edit_article/<string:id>', methods=['POST', 'GET'])
+@is_logged_in
+def edit_article(id):
+
+    #create cursor
+
+    try:
+        db = sql.connect(DATABASE)
+        cur = db.cursor()
+
+        # get article by id
+        cur.execute('Select * from articles where id = ?',id)
+
+        article = cur.fetchone()
+
+        #get form
+
+        form = ArticleForm(request.form)
+
+        form.title.data = article[1]
+        form.body.data = article[3]
+    except:
+        print("Error reading databse")
+    finally:
+        db.close()
+
+    if request.method == 'POST' and form.validate():
+        title = request.form['title']
+        body = request.form['body']
+
+        # create cursor
+        # cursor
+        try:
+            db = sql.connect(DATABASE)
+            cur = db.cursor()
+            cur.execute('Update articles set title= ? , body = ? where id = ?', (title, body, id))
+            # commit
+            db.commit()
+            flash('Article created', 'success')
+        except:
+            print("Error inserting article")
+        finally:
+            db.close()
+        return redirect(url_for('dashboard'))
+    return render_template('add_article.html', form=form)
+
+
+@app.route('/delete_article/<string:id>', methods=['POST'])
+@is_logged_in
+def delete_article(id):
+    #cursor
+    try:
+        db = sql.connect(DATABASE)
+        cur = db.cursor()
+        cur.execute('delete from articles where id = ?', id)
+        names = cur.fetchall()
+
+        db.commit()
+    except:
+        print("Error")
+    finally:
+        db.close()
+    flash('Article deleted', 'success')
+    return redirect(url_for('dashboard'))
+
+
+
 # @app.route('/users/<int:id>')
 # def users(id):
 #     names = []
