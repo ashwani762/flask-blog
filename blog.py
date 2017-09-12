@@ -56,9 +56,9 @@ def register():
             db = sql.connect(DATABASE)
             cur = db.cursor()
             cur.execute('INSERT INTO users(name, email, username, password) VALUES (?,?,?,?)',
-                    (name, email, username, password))
+                        (name, email, username, password))
 
-        # commit
+            # commit
 
             db.commit()
         except:
@@ -69,6 +69,43 @@ def register():
         flash('Registeration done', 'success')
         return redirect('/')
     return render_template('register.html', form=form)
+
+
+# login
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password_candidate = request.form['password']
+        # Cursor
+
+        try:
+            db = sql.connect(DATABASE)
+            cur = db.cursor()
+            # get user
+            result = cur.execute("SELECT * FROM users WHERE username = ?", [username])
+            data = cur.fetchall()
+            #print(result)
+
+            if len(data) != 0:
+                # get stored hash
+                # get first row password field
+                password = data[0][4]
+
+                if sha256_crypt.verify(password_candidate, password):
+                    print('PASSWORD matched')
+                else:
+                    error = 'Invalid Login'
+                    return render_template('login.html', error=error)
+            else:
+                error = 'Username not found'
+                return render_template('login.html', error=error)
+        except:
+            print('Error')
+        finally:
+            db.close()
+    return render_template('login.html')
 
 
 # @app.route('/users/<int:id>')
@@ -92,5 +129,5 @@ def register():
 #     return render_template('users.html',names=names)
 
 if __name__ == '__main__':
-    app.secret_key='secretcantbehold'
+    app.secret_key = 'secretcantbehold'
     app.run(debug=True, port=80)
